@@ -19,6 +19,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "lint": "./node_modules/.bin/eslint .",
+    "ts": "./node_modules/.bin/tsc",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
