@@ -2,7 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-// Test comment
+// Test comment 2
 
 function App() {
   return (
