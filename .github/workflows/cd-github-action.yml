@@ -1,0 +1,33 @@
+name: Release-actions
+
+on:
+  push:
+    tags:
+      - rc-0.0.*
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run ts
+        run: npm run ts
+
+      - name: Update ticket
+        env:
+          OAUTH_TOKEN: ${{ secrets.OAUTH_TOKEN }}
+          TICKET_ID: ${{ secrets.TICKET_ID }}
+          ORG_ID: ${{ secrets.ORG_ID }}
+          AUTHOR: ${{ github.actor }}
+        run: node script/updateTicket.js
