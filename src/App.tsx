@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 
 // Test comment 8 :))))))
+// One more comment
 
 function App() {
   return (
