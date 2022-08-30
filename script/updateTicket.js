@@ -11,7 +11,7 @@ const AUTHOR = process.env.AUTHOR
 const RELEASE_TAG = github.context.ref
 
 async function getReleaseCommits() {
-    const releaseTag = getReleaseTag();
+    const releaseTag = `rc-${getReleaseTag()}`;
 
     let allTags = await executeCommand('git', ['tag', '-l']).then(res => res)
     let allTagsList = allTags.split('\n').filter(tag => tag)
@@ -24,23 +24,25 @@ async function getReleaseCommits() {
 
 function getReleaseTag() {
     let regex = /[0-9]+.[0-9]+.[0-9]+/ig
-    console.log(`Release tag: ${RELEASE_TAG.match(regex)[0]}`)
+    core.info(`Release tag: ${RELEASE_TAG.match(regex)[0]}`)
     return RELEASE_TAG.match(regex)[0]
 }
 
 function getReleaseDate() {
     const time = new Date();
-    return `${time.getDate()}/${time.getMonth() + 1}/${time.getFullYear()}`
+
+    let month = time.getMonth() + 1;
+
+    return `${time.getDate()}/${month < 10 ? '0' + month : month}/${time.getFullYear()}`
 }
 
 const ticketSend = async () => {
     try {
-        let summary = `Релиз №${getReleaseTag()} от ${await getReleaseDate()}`
-        let description = `Ответственный за релиз: ${AUTHOR}\n` + `Коммиты, попавшие в релиз:\n${await getReleaseCommits()}\n`
+        let summary = `Релиз №${getReleaseTag()} от ${getReleaseDate()}`
+        let description = `Ответственный за релиз: ${AUTHOR}\n\n` + `Коммиты, попавшие в релиз:\n${await getReleaseCommits()}\n`
 
-        console.log('Created summary and description for tracker.')
-
-        console.log('Start filling release ticket...')
+        core.info('Created summary and description for tracker.')
+        core.info('Start filling release ticket...')
 
         await fetch(`https://api.tracker.yandex.net/v2/issues/${TICKET_ID}`, {
             method: "PATCH",
@@ -77,5 +79,5 @@ const executeCommand = async (command, options) => {
 
 ticketSend().then(
     _ => {
-        console.log('Done!')
+        core.info('Done!');
     })
