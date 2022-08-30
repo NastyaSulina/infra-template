@@ -11,18 +11,19 @@ const AUTHOR = process.env.AUTHOR
 const RELEASE_TAG = github.context.ref
 
 async function getReleaseCommits() {
+    const releaseTag = getReleaseTag();
+
     let allTags = await executeCommand('git', ['tag', '-l']).then(res => res)
     let allTagsList = allTags.split('\n').filter(tag => tag)
 
-    let releaseTagIndex = allTagsList.indexOf(RELEASE_TAG);
-    let tagsRange = releaseTagIndex !== 0 ? `${allTagsList[releaseTagIndex - 1]}...${RELEASE_TAG}` : `${RELEASE_TAG}`;
+    let releaseTagIndex = allTagsList.indexOf(releaseTag);
+    let tagsRange = releaseTagIndex !== 0 ? `${allTagsList[releaseTagIndex - 1]}...${releaseTag}` : `${releaseTag}`;
 
     return executeCommand('git', ['log', '--pretty=format:"%H %an %s"', `${tagsRange}`])
 }
 
 function getReleaseTag() {
     let regex = /[0-9]+.[0-9]+.[0-9]+/ig
-    console.log("ENV: ", RELEASE_TAG)
     console.log(`Release tag: ${RELEASE_TAG.match(regex)[0]}`)
     return RELEASE_TAG.match(regex)[0]
 }
