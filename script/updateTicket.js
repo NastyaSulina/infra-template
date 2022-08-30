@@ -1,3 +1,4 @@
+const exec = require('@actions/exec');
 const fetch = require('node-fetch');
 const core = require('@actions/core');
 const github = require('@actions/github');
@@ -9,12 +10,19 @@ const AUTHOR = process.env.AUTHOR
 
 const RELEASE_TAG = github.context.ref
 
-function getReleaseCommits() {
-    return ''
+async function getReleaseCommits() {
+    let allTags = await executeCommand('git', ['tag', '-l']).then(res => res)
+    let allTagsList = allTags.split('\n').filter(tag => tag)
+
+    let releaseTagIndex = allTagsList.indexOf(RELEASE_TAG);
+    let tagsRange = releaseTagIndex !== 0 ? `${allTagsList[releaseTagIndex - 1]}...${RELEASE_TAG}` : `${RELEASE_TAG}`;
+
+    return executeCommand('git', ['log', '--pretty=format:"%H %an %s"', `${tagsRange}`])
 }
 
 function getReleaseTag() {
     let regex = /[0-9]+.[0-9]+.[0-9]+/ig
+    console.log("ENV: ", RELEASE_TAG)
     console.log(`Release tag: ${RELEASE_TAG.match(regex)[0]}`)
     return RELEASE_TAG.match(regex)[0]
 }
@@ -26,8 +34,8 @@ function getReleaseDate() {
 
 const ticketSend = async () => {
     try {
-        let summary = `Релиз №${getReleaseTag()} от ${getReleaseDate()}`
-        let description = `Ответственный за релиз: ${AUTHOR}\n` + `Коммиты, попавшие в релиз:\n${getReleaseCommits()}\n`
+        let summary = `Релиз №${getReleaseTag()} от ${await getReleaseDate()}`
+        let description = `Ответственный за релиз: ${AUTHOR}\n` + `Коммиты, попавшие в релиз:\n${await getReleaseCommits()}\n`
 
         console.log('Created summary and description for tracker.')
 
@@ -49,9 +57,24 @@ const ticketSend = async () => {
     }
 }
 
+const executeCommand = async (command, options) => {
+    let myOutput = '';
+    let myError = '';
+
+    await exec.exec(command, options, {
+        listeners: {
+            stdout: (result) => {
+                myOutput += result.toString();
+            },
+            stderr: (error) => {
+                myError += error.toString();
+            }
+        }
+    })
+    return myOutput
+}
+
 ticketSend().then(
     _ => {
-        console.log('Release ticket completed successfully!')
-    }, _ => {
-        console.log('Send error')
+        console.log('Done!')
     })
