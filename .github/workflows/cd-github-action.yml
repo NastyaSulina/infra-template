@@ -31,3 +31,10 @@ jobs:
           ORG_ID: ${{ secrets.ORG_ID }}
           AUTHOR: ${{ github.actor }}
         run: node script/updateTicket.js
+
+      - name: Create docker image
+        env:
+          OAUTH_TOKEN: ${{ secrets.OAUTH_TOKEN }}
+          TICKET_ID: ${{ secrets.TICKET_ID }}
+          ORG_ID: ${{ secrets.ORG_ID }}
+        run: node script/createImage.js
