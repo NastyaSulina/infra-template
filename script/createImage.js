@@ -19,8 +19,8 @@ const createImage = async () => {
 
         await executeCommand('docker', ['build', '-t', `infra:${releaseTag}`, '.'])
 
-        await fetch(`https://api.tracker.yandex.net/v2/issues/${TICKET_ID}`, {
-            method: "PATCH",
+        await fetch(`https://api.tracker.yandex.net/v2/issues/${TICKET_ID}/comments`, {
+            method: "POST",
             headers: {
                 "X-Org-ID": ORG_ID,
                 "Authorization": `OAuth ${OAUTH_TOKEN}`
